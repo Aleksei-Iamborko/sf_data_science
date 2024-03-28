@@ -1,0 +1,177 @@
+library(dplyr)
+library(ggplot2)
+library(readxl)
+
+# Указание пути к файлу с данными
+file_path <- "C:/Dir/pima.xlsx"
+
+# Загрузка данных из файла Excel
+pima <- read_excel(file_path)
+
+# Вывод первых строк данных
+head(pima)
+
+# Определение количественных переменных в наборе данных pima
+numeric_vars <- sapply(pima, is.numeric)
+quantitative_vars <- names(pima)[numeric_vars]
+
+# Вывод количественных переменных
+print(quantitative_vars)
+
+# Для количественной переменной рассчитаем число наблюдений, среднее, стандартное отклонение, 1-й и 3-й квартили, минимум и максимум
+summary_stats <- summary(pima[, quantitative_vars])
+summary_stats
+
+# Для категориальной переменной diabetes определим абсолютную и относительные частоты
+categorical_var <- "diabetes"
+
+# Абсолютные частоты
+absolute_freq <- table(pima[[categorical_var]])
+
+# Относительные частоты
+relative_freq <- prop.table(absolute_freq)
+
+# Вывод результатов
+print("Абсолютные частоты:")
+print(absolute_freq)
+
+print("Относительные частоты:")
+print(relative_freq)
+
+# Необходимо выполнить следующие пункты:
+
+# 1. Рассчитайте описательные статистики для переменных glucose, pressure, mass.  
+summary_stats <- pima %>%
+  summarise(
+    Observations = sum(!is.na(glucose) & !is.na(pressure) & !is.na(mass)),
+    Mean_glucose = mean(glucose, na.rm = TRUE),
+    SD_glucose = sd(glucose, na.rm = TRUE),
+    Min_glucose = min(glucose, na.rm = TRUE),
+    Q1_glucose = quantile(glucose, 0.25, na.rm = TRUE),
+    Median_glucose = median(glucose, na.rm = TRUE),
+    Q3_glucose = quantile(glucose, 0.75, na.rm = TRUE),
+    Max_glucose = max(glucose, na.rm = TRUE),
+    Mean_pressure = mean(pressure, na.rm = TRUE),
+    SD_pressure = sd(pressure, na.rm = TRUE),
+    Min_pressure = min(pressure, na.rm = TRUE),
+    Q1_pressure = quantile(pressure, 0.25, na.rm = TRUE),
+    Median_pressure = median(pressure, na.rm = TRUE),
+    Q3_pressure = quantile(pressure, 0.75, na.rm = TRUE),
+    Max_pressure = max(pressure, na.rm = TRUE),
+    Mean_mass = mean(mass, na.rm = TRUE),
+    SD_mass = sd(mass, na.rm = TRUE),
+    Min_mass = min(mass, na.rm = TRUE),
+    Q1_mass = quantile(mass, 0.25, na.rm = TRUE),
+    Median_mass = median(mass, na.rm = TRUE),
+    Q3_mass = quantile(mass, 0.75, na.rm = TRUE),
+    Max_mass = max(mass, na.rm = TRUE)
+  )
+
+summary_stats
+
+for (col in names(summary_stats)) {
+  cat(col, ": ", summary_stats[[col]], "\n")
+}
+
+# 2. Рассчитайте описательную статистику для переменной diabetes. Создайте на основе переменной age новую переменную age_group, которая будет отражать следующие возрастные группы: 21–35, 36–49 и 50+. Посчитайте описательную статистику для новой переменной
+
+# Категориальная переменная
+categorical_var <- "diabetes"
+
+# Абсолютные частоты
+absolute_freq <- table(pima[[categorical_var]])
+
+# Относительные частоты
+relative_freq <- prop.table(absolute_freq)
+
+# Мода переменной
+mode_val <- names(absolute_freq)[which.max(absolute_freq)]
+mode_freq <- max(absolute_freq)
+
+# Вывод результатов
+print("Абсолютные частоты:")
+print(absolute_freq)
+
+print("Относительные частоты:")
+print(relative_freq)
+
+print("Мода переменной:")
+print(paste("Значение:", mode_val))
+print(paste("Частота:", mode_freq))
+
+# Создадим на основе переменной age новую переменную age_group, которая будет отражать следующие возрастные группы: 21–35, 36–49 и 50+
+pima$age_group <- cut(pima$age, breaks = c(20, 35, 49, Inf), labels = c("21-35", "36-49", "50+"), right = FALSE)
+
+# Проверка новой переменной age_group
+print(pima)
+
+# Удаление NA в переменной age_group
+pima <- na.omit(pima[pima$age_group != "",])
+
+# Проверка результатов
+print("После удаления NA:")
+summary(pima$age_group)
+
+# Категориальная переменная
+categorical_var <- "age_group"
+
+# Абсолютные частоты
+absolute_freq <- table(pima[[categorical_var]])
+
+# Относительные частоты
+relative_freq <- prop.table(absolute_freq)
+
+# Мода переменной
+mode_val <- names(absolute_freq)[which.max(absolute_freq)]
+mode_freq <- max(absolute_freq)
+
+# Вывод результатов
+print("Абсолютные частоты:")
+print(absolute_freq)
+
+print("Относительные частоты:")
+print(relative_freq)
+
+print("Мода переменной:")
+print(paste("Значение:", mode_val))
+print(paste("Частота:", mode_freq))
+
+# 3. Определите 90% доверительный интервал для переменной pedigree
+confidence_interval <- t.test(pima$pedigree, conf.level = 0.90)$conf.int
+confidence_interval
+
+# 4. Постройте график плотности вероятности для переменной glucose и отметьте на нем среднее значение. Для той же переменной постройте гистограмму. Постройте два ящика с усами для значений pos и neg соответственно переменной diabetes
+
+# Построение графика плотности вероятности для переменной glucose
+ggplot(data = pima, aes(x = glucose)) +
+  geom_density(fill = "skyblue", color = "blue") +
+  geom_vline(aes(xintercept = mean(glucose)), color = "red", linetype = "dashed", size = 1) +
+  ggtitle("Плотность вероятности для переменной glucose с отметкой среднего значения") +
+  xlab("Значения glucose") +
+  ylab("Плотность вероятности")
+  
+# Построение гистограммы для переменной glucose
+ggplot(data = pima, aes(x = glucose)) +
+  geom_histogram(binwidth = 10, fill = "skyblue", color = "blue", alpha = 0.7) +
+  ggtitle("Гистограмма переменной glucose") +
+  xlab("Значения glucose") +
+  ylab("Частота")
+  
+# Установка ширины значений ящика
+boxwidth <- 0.4
+
+# Построение ящиков с усами для переменной diabetes
+ggplot(data = pima, aes(x = diabetes, y = glucose)) +
+  geom_boxplot(fill = "skyblue", color = "blue", width = boxwidth) +
+  ggtitle("Ящики с усами для переменной glucose по diabetes") +
+  xlab("Диагноз диабета") +
+  ylab("Уровень glucose")
+  
+# 5. Постройте на одном графике две диаграммы рассеяния для наличия или отсутствия диабета. По оси X представьте значения обхвата трицепса, а по оси Y — массу тела. Выполните окрашивание, заливку и группирование по переменной diabetes
+
+# Построение диаграммы рассеяния с окрашиванием и группированием по переменной diabetes
+ggplot(data = pima, aes(x = triceps, y = mass)) +
+  geom_point(aes(color = diabetes, fill = diabetes), shape = 21, size = 3) +
+  facet_grid(. ~ diabetes) +
+  labs(x = "Обхват трицепса", y = "Масса тела", color = "Диабет", fill = "Диабет") +
+  theme_minimal()
